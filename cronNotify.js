@@ -10,6 +10,7 @@ const msg = require(process.env.APP_PATH + 'message')
 /* send debugger only */
 const DEBUG_MODE = false
 const DEBUG_USER = process.env.DEBUG_USER
+const debugUserList = []
 
 const main = async () => {
   let userList = null
@@ -25,12 +26,17 @@ const main = async () => {
     console.log('result:', lineResult.err, lineResult.body)
   }
   for(let clientUserId of Object.keys(userList)) {
-    if(DEBUG_MODE && clientUserId !== DEBUG_USER) {
+    const userName = userList[clientUserId].name
+    if(DEBUG_MODE && clientUserId !== DEBUG_USER && debugUserList.indexOf(userName) < 0) {
+      console.log('[debug] ignore userId:', clientUserId, userName)
       continue
     }
-    const userName = userList[clientUserId]
+    if(!userList[clientUserId].notify) {
+      console.log('[debug] ignore not notify user:', clientUserId, userName)
+      continue
+    }
     const lineResult = await lib.pushMessage(clientUserId, [{ type: 'text', text: userName + 'さん，今日のお昼ご飯はどうしますか？', quickReply: msg.quickReply, }])
-    console.log('result:', lineResult.err, lineResult.body)
+    console.log('result:', userName, lineResult.err, lineResult.body)
   }
   process.exit(0)
 }

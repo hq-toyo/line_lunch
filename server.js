@@ -21,6 +21,14 @@ const state = {}
 let userList = {}
 try {
   userList = JSON.parse(fs.readFileSync(USER_LIST_FILE))
+  /*
+  const newUserList = {}
+  Object.keys(userList).forEach((userId) => {
+    newUserList[userId] = { name: userList[userId].name, notify: true, }
+  })
+  fs.writeFileSync(USER_LIST_FILE, JSON.stringify(newUserList, null, 2))
+  userList = newUserList
+  */
 } catch(e) {
   userList = {}
 }
@@ -50,13 +58,13 @@ const decodeAndReply = async (event) => {
   const text = event.message.text
   let replyMessage = [{ type: 'text', text: 'ボタンから選択してください', }]
   const oldState = state[userId]
-  const userName = userList[userId]
+  const userName = (userList[userId] || {}).name
   let noQuickReply = false
   let saveMessage = false
 
   if(oldState === msg.CHANGE_NAME) {
     const newName = text.replace('\n', '')
-    userList[userId] = newName
+    userList[userId] = { name: newName, notify: ((userList[userId] || {}).notify || true), }
     replyMessage = [{ type: 'text', text: '名前を[' + newName + ']に設定しました！', }]
     fs.writeFileSync(USER_LIST_FILE, JSON.stringify(userList, null, 2))
   } else if(oldState === msg.OTHER) {
@@ -84,8 +92,19 @@ const decodeAndReply = async (event) => {
   } else if(msg.NO_TEXT_LIST.indexOf(text) >= 0) {
     replyMessage = [{ type: 'text', text: userName + 'さん，お弁当は[不要]ですね！\n連絡ありがとうございます．', }]
     saveMessage = true
+  } else if(msg.NO_TEXT_LIST.indexOf(text) >= 0) {
+    replyMessage = [{ type: 'text', text: userName + 'さん，お弁当は[不要]ですね！\n連絡ありがとうございます．', }]
+    saveMessage = true
+  } else if(text === msg.NOTIFY_EVERYDAY) {
+    userList[userId].notify = !userList[userId].notify
+    if(userList[userId].notify) {
+      replyMessage = [{ type: 'text', text: userName + 'さん，平日の朝8:30に毎日通知します！', }]
+    } else {
+      replyMessage = [{ type: 'text', text: userName + 'さん，毎日の通知をオフにしました！', }]
+    }
+    fs.writeFileSync(USER_LIST_FILE, JSON.stringify(userList, null, 2))
   } else if(msg.OTHER === text) {
-    replyMessage = [{ type: 'text', text: userName + 'さん，誰のお弁当が必要か，名前を全員分入力してください！', }]
+    replyMessage = [{ type: 'text', text: userName + 'さん，誰のお弁当が必要か名前を全員分入力してください！', }]
     noQuickReply = true
     state[userId] = msg.OTHER
   }

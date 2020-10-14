@@ -1,6 +1,7 @@
 const CHANGE_NAME = '名前変更'
-const ALL_RESERVATION = '全員のメッセージ'
+const ALL_RESERVATION = 'みんなの予約'
 const OTHER = 'その他'
+const NOTIFY_EVERYDAY = '平日通知'
 const STOP_LIST = ['締め切り', '締切', '締切り', 'しめきり', '終わり']
 const YES_TEXT_LIST = ['はーい', 'いる', 'はい', '必要', '必要です', '有り', '有りです', 'あり', 'ありです', 'うん', '1個', 'ひとつ', '1つだけ']
 const YES2_TEXT_LIST = ['2個', 'ふたつ', '2つだけ']
@@ -57,6 +58,14 @@ const quickReply =  {
         'text': ALL_RESERVATION,
       }
     },
+    {
+      'type': 'action',
+      'action': {
+        'type': 'message',
+        'label': NOTIFY_EVERYDAY,
+        'text': NOTIFY_EVERYDAY,
+      }
+    },
   ]
 }
 
@@ -69,5 +78,6 @@ module.exports = {
   YES_TEXT_LIST,
   YES2_TEXT_LIST,
   NO_TEXT_LIST,
+  NOTIFY_EVERYDAY,
 }
 
