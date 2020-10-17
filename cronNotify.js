@@ -5,7 +5,9 @@ process.env.APP_PATH = __dirname + '/'
 
 const lib = require(process.env.APP_PATH + 'lib')
 const USER_LIST_FILE = process.env.APP_PATH + 'userList.json'
+const NO_LUNCH_FILE = process.env.APP_PATH + '__NO_LUNCH'
 const msg = require(process.env.APP_PATH + 'message')
+const PLACE_HOLDER = '{USER_NAME}'
 
 /* send debugger only */
 const DEBUG_MODE = false
@@ -14,6 +16,14 @@ const debugUserList = []
 
 const main = async () => {
   let userList = null
+  let messageLine = [{ type: 'text', text: PLACE_HOLDER + 'さん，今日のお昼ご飯はどうしますか？', quickReply: msg.quickReply, }]
+  try {
+    fs.statSync(NO_LUNCH_FILE)
+    fs.unlinkSync(NO_LUNCH_FILE)
+    messageLine = [{ type: 'text', text: PLACE_HOLDER + 'さん，今日のご飯は各自で購入してください！入力されても購入しません．', }]
+  } catch(e) {
+  }
+
   try {
     userList = JSON.parse(fs.readFileSync(USER_LIST_FILE))
   } catch(e) {
@@ -35,7 +45,8 @@ const main = async () => {
       console.log('[debug] ignore not notify user:', clientUserId, userName)
       continue
     }
-    const lineResult = await lib.pushMessage(clientUserId, [{ type: 'text', text: userName + 'さん，今日のお昼ご飯はどうしますか？', quickReply: msg.quickReply, }])
+    console.log(messageLine.map((line) => { return Object.assign(line, { text: line.text.replace(PLACE_HOLDER, userName), }) }))
+    const lineResult = await lib.pushMessage(clientUserId, messageLine.map((line) => { return Object.assign(line, { text: line.text.replace(PLACE_HOLDER, userName), }) }))
     console.log('result:', userName, lineResult.err, lineResult.body)
   }
   process.exit(0)

@@ -9,6 +9,7 @@ const msg = require(process.env.APP_PATH + 'message')
 const PORT = process.env.PORT
 const WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const USER_LIST_FILE = process.env.APP_PATH + 'userList.json'
+const NO_LUNCH_FILE = process.env.APP_PATH + '__NO_LUNCH'
 
 const userParam = { 
   key: fs.readFileSync(process.env.DUMMY_CERT_KEY),
@@ -92,9 +93,15 @@ const decodeAndReply = async (event) => {
   } else if(msg.NO_TEXT_LIST.indexOf(text) >= 0) {
     replyMessage = [{ type: 'text', text: userName + 'さん，お弁当は[不要]ですね！\n連絡ありがとうございます．', }]
     saveMessage = true
-  } else if(msg.NO_TEXT_LIST.indexOf(text) >= 0) {
-    replyMessage = [{ type: 'text', text: userName + 'さん，お弁当は[不要]ですね！\n連絡ありがとうございます．', }]
-    saveMessage = true
+  } else if(msg.NO_LUNCH_LIST.indexOf(text) >= 0) {
+    try {
+      fs.statSync(NO_LUNCH_FILE)
+      fs.unlinkSync(NO_LUNCH_FILE)
+      replyMessage = [{ type: 'text', text: userName + 'さん，明日のご飯通知は[こちら]で購入するように通知します．', }]
+    } catch(e) {
+      fs.writeFileSync(NO_LUNCH_FILE, '@')
+      replyMessage = [{ type: 'text', text: userName + 'さん，明日のご飯通知は[各自]で購入してもらうように通知します．', }]
+    }
   } else if(text === msg.NOTIFY_EVERYDAY) {
     userList[userId].notify = !userList[userId].notify
     if(userList[userId].notify) {
