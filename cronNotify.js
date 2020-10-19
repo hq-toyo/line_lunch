@@ -45,8 +45,7 @@ const main = async () => {
       console.log('[debug] ignore not notify user:', clientUserId, userName)
       continue
     }
-    console.log(messageLine.map((line) => { return Object.assign(line, { text: line.text.replace(PLACE_HOLDER, userName), }) }))
-    const lineResult = await lib.pushMessage(clientUserId, messageLine.map((line) => { return Object.assign(line, { text: line.text.replace(PLACE_HOLDER, userName), }) }))
+    const lineResult = await lib.pushMessage(clientUserId, messageLine.map((line) => { return Object.assign({}, line, { text: line.text.replace(PLACE_HOLDER, userName), }) }))
     console.log('result:', userName, lineResult.err, lineResult.body)
   }
   process.exit(0)
